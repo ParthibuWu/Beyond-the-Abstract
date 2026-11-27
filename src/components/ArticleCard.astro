@@ -1,0 +1,28 @@
+---
+interface Props {
+  entry: any;
+  featured?: boolean;
+}
+
+const { entry, featured = false } = Astro.props;
+const { data } = entry;
+const base = import.meta.env.BASE_URL;
+const date = data.pubDate
+  ? new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(data.pubDate)
+  : data.status === "outline" ? "Outline" : "Draft";
+const statusLabel = data.status === "published" ? "Published note" : data.status === "outline" ? "Planned note" : "Working draft";
+---
+
+<article class:list={["article-card", featured && "article-card-featured"]}>
+  <div class="card-meta">
+    <a class="category-label" href={base + "research/?category=" + encodeURIComponent(data.category)}>{data.category}</a>
+    <span class:list={["status-pill", "status-" + data.status]}>{statusLabel}</span>
+  </div>
+  <h3><a href={base + "research/" + entry.id + "/"}>{data.title}<span aria-hidden="true"> ↗</span></a></h3>
+  <p>{data.description}</p>
+  <div class="card-footer">
+    <span>{date}</span>
+    <span>{data.readingTime} min read</span>
+    <span>{data.difficulty}</span>
+  </div>
+</article>

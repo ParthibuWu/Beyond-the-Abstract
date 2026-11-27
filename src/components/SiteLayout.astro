@@ -1,0 +1,108 @@
+---
+import "../styles/global.css";
+import "katex/dist/katex.min.css";
+import Header from "./Header.astro";
+import Footer from "./Footer.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogType?: "website" | "article";
+  image?: string;
+}
+
+const {
+  title = "Beyond the Abstract — A Personal Research Journal",
+  description = "Exploring the mathematics, algorithms, and scientific ideas behind computational discovery.",
+  ogType = "website",
+  image,
+} = Astro.props;
+const base = import.meta.env.BASE_URL;
+const canonicalPath = Astro.url.pathname.startsWith(base)
+  ? Astro.url.pathname
+  : base + Astro.url.pathname.replace(/^\/+/, "");
+const canonical = Astro.site ? new URL(canonicalPath, Astro.site).href : undefined;
+const socialImage = image ? new URL(base + image.replace(/^\//, ""), Astro.site || Astro.url).href : undefined;
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f7f7f2" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="Beyond the Abstract" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {canonical && <meta property="og:url" content={canonical} />}
+    {socialImage && <meta property="og:image" content={socialImage} />}
+    <meta name="twitter:card" content={socialImage ? "summary_large_image" : "summary"} />
+    <link rel="alternate" type="application/rss+xml" title="Beyond the Abstract RSS" href={base + "rss.xml"} />
+    <link rel="icon" type="image/svg+xml" href={base + "favicon.svg"} />
+    <title>{title}</title>
+    <script is:inline>
+      try {
+        const savedTheme = localStorage.getItem("beyond-abstract-theme");
+        if (savedTheme === "dark" || savedTheme === "light") {
+          document.documentElement.dataset.theme = savedTheme;
+        } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="reading-progress" aria-hidden="true"><span data-reading-progress></span></div>
+    <Header />
+    <main id="main-content"><slot /></main>
+    <Footer />
+    <div class="toast" role="status" aria-live="polite" aria-atomic="true" data-toast></div>
+    <script is:inline>
+      document.addEventListener("click", function (event) {
+        const themeButton = event.target.closest("[data-theme-toggle]");
+        if (themeButton) {
+          const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+          document.documentElement.dataset.theme = next;
+          themeButton.setAttribute("aria-pressed", String(next === "dark"));
+          themeButton.setAttribute("aria-label", next === "dark" ? "Switch to light theme" : "Switch to dark theme");
+          try { localStorage.setItem("beyond-abstract-theme", next); } catch {}
+        }
+
+        const menuButton = event.target.closest("[data-menu-toggle]");
+        if (menuButton) {
+          const isOpen = menuButton.getAttribute("aria-expanded") === "true";
+          menuButton.setAttribute("aria-expanded", String(!isOpen));
+          menuButton.setAttribute("aria-label", isOpen ? "Open navigation" : "Close navigation");
+          document.querySelector("[data-primary-nav]").classList.toggle("is-open", !isOpen);
+        }
+
+        if (event.target.closest("[data-primary-nav] a")) {
+          const nav = document.querySelector("[data-primary-nav]");
+          const toggle = document.querySelector("[data-menu-toggle]");
+          nav.classList.remove("is-open");
+          toggle.setAttribute("aria-expanded", "false");
+          toggle.setAttribute("aria-label", "Open navigation");
+        }
+      });
+
+      const initialTheme = document.documentElement.dataset.theme === "dark";
+      document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+        button.setAttribute("aria-pressed", String(initialTheme));
+        button.setAttribute("aria-label", initialTheme ? "Switch to light theme" : "Switch to dark theme");
+      });
+
+      window.addEventListener("scroll", function () {
+        const bar = document.querySelector("[data-reading-progress]");
+        if (!bar) return;
+        const total = document.documentElement.scrollHeight - window.innerHeight;
+        const amount = total > 0 ? (window.scrollY / total) * 100 : 0;
+        bar.style.width = Math.min(100, Math.max(0, amount)) + "%";
+      }, { passive: true });
+    </script>
+  </body>
+</html>

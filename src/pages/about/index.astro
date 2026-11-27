@@ -1,0 +1,78 @@
+---
+import SiteLayout from "../../components/SiteLayout.astro";
+import { profile } from "../../data/profile";
+
+const links = [
+  { label: "GitHub", href: profile.github },
+  { label: "LinkedIn", href: profile.linkedin },
+  { label: "Email", href: profile.email ? "mailto:" + profile.email : "" },
+].filter((item) => item.href);
+---
+
+<SiteLayout
+  title="About | Beyond the Abstract"
+  description="About the student behind Beyond the Abstract, the journal's editorial approach, and its developing research interests."
+>
+  <section class="page-heading">
+    <div class="container">
+      <span class="eyebrow">About the author</span>
+      <h1>A researcher in progress.</h1>
+      <p>A Biotechnology undergraduate building the methods and habits needed to ask better computational questions.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container profile-grid">
+      <article class="profile-panel">
+        <span class="eyebrow">Background</span>
+        <h2>{profile.role}</h2>
+        <p>{profile.introduction}</p>
+        <p>My research experience includes faculty-supervised independent work and communicating progress and findings to faculty mentors. I describe that experience as supervised independent research and keep the scope of each contribution specific.</p>
+        {links.length > 0 && (
+          <div class="profile-links">
+            {links.map((item) => <a href={item.href} target={item.href.startsWith("mailto:") ? undefined : "_blank"} rel={item.href.startsWith("mailto:") ? undefined : "noreferrer"}>{item.label} ↗</a>)}
+          </div>
+        )}
+      </article>
+
+      <article class="profile-panel">
+        <span class="eyebrow">Developing research direction</span>
+        <h2>Make evidence visible.</h2>
+        <p>{profile.researchFocus}</p>
+        <p>This direction raises practical questions: how to separate missing data from negative evidence, how to compare confidence measures, and how to express disagreement without hiding it behind a single score.</p>
+        <div class="interest-list" aria-label="Current learning areas">
+          <span>Computational biology</span><span>Protein function</span><span>Scientific ML</span>
+          <span>Statistics</span><span>Mathematical modeling</span><span>Scientific software</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section section-tint">
+    <div class="container">
+      <div class="section-heading">
+        <div><span class="eyebrow">How this journal works</span><h2>Three layers, kept distinct</h2></div>
+        <p>Every research discussion should help readers see where the evidence ends and interpretation begins.</p>
+      </div>
+      <div class="topic-grid editorial-grid">
+        <article class="topic-card"><span class="topic-index">01</span><h3>What the paper reports</h3><p>Methods, data, and findings are checked against the primary source and described with the right publication status.</p></article>
+        <article class="topic-card"><span class="topic-index">02</span><h3>How I interpret it</h3><p>My explanation and criticism are labelled as interpretation, with assumptions and limitations kept in view.</p></article>
+        <article class="topic-card"><span class="topic-index">03</span><h3>What remains open</h3><p>Potential applications and next questions are presented as possibilities to investigate, not established results.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-heading">
+        <div><span class="eyebrow">Skills in development</span><h2>Building foundations, then applying them.</h2></div>
+        <p>These are areas of active learning, not proficiency claims. The CV can later document concrete coursework, implementations, and research contributions.</p>
+      </div>
+      <div class="topic-grid editorial-grid">
+        <article class="topic-card"><span class="topic-index">01</span><h3>Computing and data</h3><p>Python, programming fundamentals, data handling, and reproducible computational work.</p></article>
+        <article class="topic-card"><span class="topic-index">02</span><h3>Biology and annotation</h3><p>Protein sequence and function, evidence sources, and careful interpretation of computational predictions.</p></article>
+        <article class="topic-card"><span class="topic-index">03</span><h3>Mathematics and communication</h3><p>Statistics, probability, mathematical modeling, and clear explanations of research methods.</p></article>
+      </div>
+    </div>
+  </section>
+</SiteLayout>

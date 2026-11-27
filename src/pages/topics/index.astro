@@ -1,0 +1,43 @@
+---
+import { getCollection } from "astro:content";
+import SiteLayout from "../../components/SiteLayout.astro";
+import { topics } from "../../data/topics";
+
+const base = import.meta.env.BASE_URL;
+const entries = await getCollection("research");
+---
+
+<SiteLayout
+  title="Topics | Beyond the Abstract"
+  description="Browse research notes by scientific machine learning, computational biology, protein modeling, mathematical foundations, and related topics."
+>
+  <section class="page-heading">
+    <div class="container">
+      <span class="eyebrow">A map of the questions</span>
+      <h1>Topics</h1>
+      <p>These categories reflect areas I am learning through. They are a guide to the archive, not claims of expertise.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 0">
+    <div class="container">
+      <div class="topic-grid topic-grid-all">
+        {topics.map((topic, index) => {
+          const count = entries.filter((entry) => entry.data.category === topic.name).length;
+          return (
+            <a class="topic-card" href={base + "research/?category=" + encodeURIComponent(topic.name)}>
+              <span class="topic-index">0{index + 1}</span><span class="topic-arrow" aria-hidden="true">↗</span>
+              <h3>{topic.name}</h3>
+              <p>{topic.description}</p>
+              <span class="topic-count">{count} {count === 1 ? "note" : "notes"}</span>
+            </a>
+          );
+        })}
+      </div>
+      <div class="callout callout-warm" style="margin-top:2rem">
+        <strong>Categories will change as the work develops.</strong>
+        <p>New methods often connect several fields. Tags and article text help preserve those connections instead of forcing each note into a single narrow box.</p>
+      </div>
+    </div>
+  </section>
+</SiteLayout>

@@ -1,0 +1,30 @@
+---
+import { profile } from "../data/profile";
+const base = import.meta.env.BASE_URL;
+---
+
+<footer class="site-footer">
+  <div class="footer-main">
+    <div class="footer-intro">
+      <a class="footer-brand" href={base}>Beyond the Abstract<span aria-hidden="true">.</span></a>
+      <p>Careful notes on the science, mathematics, and code behind computational discovery.</p>
+    </div>
+    <div class="footer-links">
+      <span class="eyebrow">Explore</span>
+      <a href={base + "research/"}>Research notes</a>
+      <a href={base + "topics/"}>Topics</a>
+      <a href={base + "projects/"}>Projects</a>
+    </div>
+    <div class="footer-links">
+      <span class="eyebrow">Elsewhere</span>
+      <a href={base + "rss.xml"}>RSS feed <span aria-hidden="true">↗</span></a>
+      {profile.github && <a href={profile.github} target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>}
+      {profile.linkedin && <a href={profile.linkedin} target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>}
+      {profile.email && <a href={"mailto:" + profile.email}>Email <span aria-hidden="true">↗</span></a>}
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Independent educational research notes. Claims and interpretations are labelled.</span>
+    <span>© {new Date().getFullYear()} · Built to keep learning in public.</span>
+  </div>
+</footer>

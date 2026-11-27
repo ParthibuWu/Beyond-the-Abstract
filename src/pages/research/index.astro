@@ -1,0 +1,113 @@
+---
+import { getCollection } from "astro:content";
+import SiteLayout from "../../components/SiteLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { topics } from "../../data/topics";
+
+const base = import.meta.env.BASE_URL;
+const entries = await getCollection("research");
+const years = [...new Set(entries.map((entry) => entry.data.originalPaperDate?.slice(0, 4)).filter(Boolean))].sort().reverse();
+const sorted = [...entries].sort((a, b) => {
+  const rank = { published: 0, draft: 1, outline: 2 };
+  return rank[a.data.status] - rank[b.data.status] ||
+    (b.data.pubDate?.getTime() || 0) - (a.data.pubDate?.getTime() || 0);
+});
+---
+
+<SiteLayout
+  title="Research Notes | Beyond the Abstract"
+  description="Search research discussions and field notes on computational biology, scientific machine learning, protein design, and mathematical methods."
+>
+  <section class="page-heading">
+    <div class="container">
+      <span class="eyebrow">The archive</span>
+      <h1>Research notes</h1>
+      <p>Critical discussions, technical explanations, and short field notes. Search by title or article text, then narrow the archive by topic, year, or editorial status.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 0">
+    <div class="container">
+      <form class="archive-tools" role="search" data-archive-form>
+        <div class="field">
+          <label for="archive-search">Search notes</label>
+          <input id="archive-search" type="search" name="q" placeholder="Try a method, concept, or paper title" autocomplete="off" data-filter-search />
+        </div>
+        <div class="field">
+          <label for="archive-category">Topic</label>
+          <select id="archive-category" name="category" data-filter-category>
+            <option value="">All topics</option>
+            {topics.map((topic) => <option value={topic.name}>{topic.name}</option>)}
+          </select>
+        </div>
+        <div class="field">
+          <label for="archive-year">Paper year</label>
+          <select id="archive-year" name="year" data-filter-year>
+            <option value="">Any year</option>
+            {years.map((year) => <option value={year}>{year}</option>)}
+            <option value="unknown">Not listed</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="archive-paper-status">Paper status</label>
+          <select id="archive-paper-status" name="paper-status" data-filter-paper-status>
+            <option value="">All paper statuses</option>
+            <option value="peer-reviewed">Peer-reviewed</option>
+            <option value="preprint">Preprint</option>
+            <option value="conference">Conference</option>
+            <option value="unverified">To verify</option>
+            <option value="not-applicable">Concept note</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="archive-status">Note status</label>
+          <select id="archive-status" name="status" data-filter-status>
+            <option value="">All statuses</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="outline">Outline</option>
+          </select>
+        </div>
+      </form>
+
+      <div class="archive-summary" aria-live="polite">
+        <span><strong data-result-count>{sorted.length}</strong> notes <span aria-hidden="true">·</span> published notes and working drafts are labelled separately</span>
+        <label class="field" for="archive-sort" style="display:flex;align-items:center;gap:.5rem">Sort
+          <select id="archive-sort" data-filter-sort style="min-height:34px;padding:.3rem .55rem">
+            <option value="featured">Featured first</option>
+            <option value="newest">Newest first</option>
+            <option value="title">Title A–Z</option>
+            <option value="reading">Reading time</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="articles-grid" data-archive-results>
+        {sorted.map((entry) => (
+          <div
+            data-archive-card
+            data-search={(entry.data.title + " " + entry.data.description + " " + entry.data.category + " " + entry.data.tags.join(" ") + " " + entry.body).toLowerCase()}
+            data-category={entry.data.category}
+            data-year={entry.data.originalPaperDate?.slice(0, 4) || "unknown"}
+            data-paper-status={entry.data.publicationStatus}
+            data-status={entry.data.status}
+            data-featured={String(entry.data.featured)}
+            data-date={entry.data.pubDate?.toISOString() || ""}
+            data-reading={entry.data.readingTime}
+            data-title={entry.data.title.toLowerCase()}
+          >
+            <ArticleCard entry={entry} />
+          </div>
+        ))}
+        <div class="no-results" data-empty-results hidden>
+          <h3>No notes match those filters.</h3>
+          <p>Try a broader search or clear one of the selected filters.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</SiteLayout>
+
+<script>
+  import "../../scripts/archive";
+</script>

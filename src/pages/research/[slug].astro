@@ -1,0 +1,184 @@
+---
+import { getCollection, render } from "astro:content";
+import SiteLayout from "../../components/SiteLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { profile } from "../../data/profile";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("research");
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const { data } = entry;
+const base = import.meta.env.BASE_URL;
+const allEntries = await getCollection("research");
+const ordered = [...allEntries].sort((a, b) => {
+  const rank = { published: 0, draft: 1, outline: 2 };
+  return rank[a.data.status] - rank[b.data.status] ||
+    (b.data.pubDate?.getTime() || 0) - (a.data.pubDate?.getTime() || 0);
+});
+const index = ordered.findIndex((item) => item.id === entry.id);
+const previous = ordered[index - 1];
+const next = ordered[index + 1];
+const related = ordered.filter((item) => item.id !== entry.id).slice(0, 2);
+const statusLabel = {
+  published: "Published note",
+  draft: "Working draft",
+  outline: "Outline",
+}[data.status];
+const paperStatusLabel = {
+  "peer-reviewed": "Peer-reviewed",
+  preprint: "Preprint",
+  conference: "Conference paper",
+  unverified: "To verify",
+  "not-applicable": "Concept note",
+}[data.publicationStatus];
+const formattedDiscussionDate = data.pubDate
+  ? new Intl.DateTimeFormat("en", { day: "numeric", month: "long", year: "numeric" }).format(data.pubDate)
+  : statusLabel;
+const authorName = profile.displayName || "Biotechnology undergraduate";
+const canonicalPath = Astro.url.pathname.startsWith(base)
+  ? Astro.url.pathname
+  : base + Astro.url.pathname.replace(/^\/+/, "");
+const canonical = Astro.site ? new URL(canonicalPath, Astro.site).href : Astro.url.href;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: data.title,
+  description: data.description,
+  datePublished: data.pubDate?.toISOString(),
+  mainEntityOfPage: canonical,
+  author: { "@type": "Person", name: authorName },
+  publisher: { "@type": "Organization", name: "Beyond the Abstract" },
+  articleSection: data.category,
+  keywords: data.tags,
+};
+---
+
+<SiteLayout
+  title={data.title + " | Beyond the Abstract"}
+  description={data.description}
+  ogType="article"
+  image={data.featuredImage}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <header class="article-head">
+    <div class="article-head-inner">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href={base}>Home</a><span aria-hidden="true">/</span><a href={base + "research/"}>Research notes</a><span aria-hidden="true">/</span><span aria-current="page">{data.title}</span>
+      </nav>
+      <div class="article-taxonomy">
+        <a class="category-label" href={base + "research/?category=" + encodeURIComponent(data.category)}>{data.category}</a>
+        <span class:list={["status-pill", "status-" + data.status]}>{statusLabel}</span>
+      </div>
+      <h1>{data.title}</h1>
+      <p class="article-subtitle">{data.description}</p>
+      <div class="article-taxonomy">
+        {data.tags.map((tag) => <a class="tag" href={base + "research/?q=" + encodeURIComponent(tag)}>{tag}</a>)}
+      </div>
+      <div class="article-meta-grid">
+        <div><span class="meta-label">This discussion</span><span class="meta-value">{formattedDiscussionDate}</span></div>
+        <div><span class="meta-label">Original paper</span><span class="meta-value">{data.originalPaperDate || "Date to verify"}</span></div>
+        <div><span class="meta-label">Reading time</span><span class="meta-value">{data.readingTime} minutes</span></div>
+        <div><span class="meta-label">Difficulty</span><span class="meta-value">{data.difficulty}</span></div>
+      </div>
+      <div class="paper-citation">
+        <strong>Paper discussed</strong>
+        <div>
+          <p>{data.paperTitle || "No original paper linked — concept note"}</p>
+          <p class="citation-detail">
+            {data.paperAuthors.length ? data.paperAuthors.join(", ") : "Authors to verify"}
+            <span aria-hidden="true"> · </span>
+            {data.journal || "Journal or preprint server to verify"}
+            <span aria-hidden="true"> · </span>
+            {paperStatusLabel}
+          </p>
+          <div class="paper-links">
+            {data.paperUrl && <a href={data.paperUrl} target="_blank" rel="noreferrer">Open original paper ↗</a>}
+            {data.doi && <a href={"https://doi.org/" + data.doi} target="_blank" rel="noreferrer">DOI: {data.doi} ↗</a>}
+            {data.codeRepository && <a href={data.codeRepository} target="_blank" rel="noreferrer">Code repository ↗</a>}
+            {data.datasetLinks.map((url) => <a href={url} target="_blank" rel="noreferrer">Dataset ↗</a>)}
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container article-layout">
+    <div class="article-content">
+      <details class="toc-mobile">
+        <summary>On this page</summary>
+        <ul>
+          {headings.filter((heading) => heading.depth === 2).map((heading) => (
+            <li><a href={"#" + heading.slug} data-toc-link>{heading.text}</a></li>
+          ))}
+        </ul>
+      </details>
+
+      {data.status !== "published" && (
+        <div class="callout callout-warm article-disclaimer">
+          <strong>{data.status === "outline" ? "Outline — not a published research discussion" : "Working draft — source details need review"}</strong>
+          <p>These notes are independent educational commentary. Verify the original source and all scientific claims before treating this page as a finished analysis.</p>
+        </div>
+      )}
+
+      <article class="article-body" data-article-body>
+        <Content />
+      </article>
+
+      {data.references.length > 0 && (
+        <section class="reference-list" aria-labelledby="references-heading">
+          <h2 id="references-heading">Further reading and references</h2>
+          <ul>
+            {data.references.map((reference) => (
+              <li>
+                {reference.startsWith("https://")
+                  ? <a href={reference} target="_blank" rel="noreferrer">{reference}</a>
+                  : reference}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div class="article-actions">
+        <button type="button" class="button button-quiet" data-share-article>Share this note <span aria-hidden="true">↗</span></button>
+        <a class="button button-secondary" href={base + "research/"}>Back to the archive</a>
+      </div>
+
+      <nav class="article-nav" aria-label="Article navigation">
+        {previous ? (
+          <a href={base + "research/" + previous.id + "/"}><span>← Previous note</span><strong>{previous.data.title}</strong></a>
+        ) : <span></span>}
+        {next && <a class="article-nav-next" href={base + "research/" + next.id + "/"}><span>Next note →</span><strong>{next.data.title}</strong></a>}
+      </nav>
+    </div>
+
+    {headings.some((heading) => heading.depth === 2) && (
+      <aside class="article-toc article-toc-desktop" aria-label="On this page">
+        <h2>On this page</h2>
+        <ul>
+          {headings.filter((heading) => heading.depth === 2).map((heading) => (
+            <li><a href={"#" + heading.slug} data-toc-link>{heading.text}</a></li>
+          ))}
+        </ul>
+      </aside>
+    )}
+  </div>
+
+  {related.length > 0 && (
+    <section class="related-section">
+      <div class="container">
+        <div class="section-heading"><div><span class="eyebrow">Keep exploring</span><h2>More notes</h2></div></div>
+        <div class="articles-grid">{related.map((item) => <ArticleCard entry={item} />)}</div>
+      </div>
+    </section>
+  )}
+</SiteLayout>
+
+<script>
+  import "../../scripts/article";
+</script>

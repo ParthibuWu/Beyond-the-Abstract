@@ -1,0 +1,37 @@
+---
+const base = import.meta.env.BASE_URL;
+const path = Astro.url.pathname;
+const home = path === base || path === base.slice(0, -1);
+const research = path.includes("/research");
+---
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href={base} aria-label="Beyond the Abstract home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40" fill="none">
+          <path d="M7 12.5h10.5a5.5 5.5 0 0 1 0 11H7z" stroke="currentColor" stroke-width="2" />
+          <path d="M7 23.5h13a5.5 5.5 0 0 1 0 11H7z" stroke="currentColor" stroke-width="2" />
+          <path d="M25.5 7h7M25.5 20h7M25.5 33h7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </span>
+      <span class="brand-copy"><strong>Beyond the Abstract</strong><small>A personal research journal</small></span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-menu-toggle>
+      <span></span><span></span>
+    </button>
+
+    <nav class="primary-nav" id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+      <a href={base} aria-current={home ? "page" : undefined}>Home</a>
+      <a href={base + "research/"} aria-current={research ? "page" : undefined}>Research notes</a>
+      <a href={base + "topics/"} aria-current={path.includes("/topics") ? "page" : undefined}>Topics</a>
+      <a href={base + "projects/"} aria-current={path.includes("/projects") ? "page" : undefined}>Projects</a>
+      <a href={base + "about/"} aria-current={path.includes("/about") ? "page" : undefined}>About</a>
+      <a class="nav-cv" href={base + "cv/"} aria-current={path.includes("/cv") ? "page" : undefined}>CV <span aria-hidden="true">↗</span></a>
+      <button class="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" data-theme-toggle>
+        <span aria-hidden="true" class="theme-glyph">◐</span><span class="theme-label">Theme</span>
+      </button>
+    </nav>
+  </div>
+</header>

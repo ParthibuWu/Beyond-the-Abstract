@@ -1,0 +1,38 @@
+---
+import SiteLayout from "../../components/SiteLayout.astro";
+import { profile } from "../../data/profile";
+
+const base = import.meta.env.BASE_URL;
+const cvUrl = profile.cvPath ? base + profile.cvPath.replace(/^\//, "") : "";
+---
+
+<SiteLayout
+  title="CV | Beyond the Abstract"
+  description="Curriculum vitae and academic profile."
+>
+  <section class="page-heading">
+    <div class="container">
+      <span class="eyebrow">Academic profile</span>
+      <h1>Curriculum vitae</h1>
+      <p>A concise record of education, research experience, projects, and technical development.</p>
+    </div>
+  </section>
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      {cvUrl ? (
+        <div class="cv-card">
+          <span class="eyebrow">Current CV</span>
+          <h2>{profile.displayName || profile.role}</h2>
+          <p>Download the current curriculum vitae.</p>
+          <a class="button" href={cvUrl} download>Download CV <span aria-hidden="true">↓</span></a>
+        </div>
+      ) : (
+        <div class="cv-card">
+          <span class="eyebrow">Not added yet</span>
+          <h2>Keep this page accurate.</h2>
+          <p>No CV file is linked yet. Add a current PDF to the public folder and set its path in the profile data when it is ready to share.</p>
+        </div>
+      )}
+    </div>
+  </section>
+</SiteLayout>

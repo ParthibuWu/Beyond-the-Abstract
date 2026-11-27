@@ -1,0 +1,48 @@
+---
+import SiteLayout from "../../components/SiteLayout.astro";
+import { projects } from "../../data/projects";
+---
+
+<SiteLayout
+  title="Projects | Beyond the Abstract"
+  description="A transparent view of ongoing research directions, planned computational experiments, and project placeholders."
+>
+  <section class="page-heading">
+    <div class="container">
+      <span class="eyebrow">From questions to code</span>
+      <h1>Projects</h1>
+      <p>Research ideas take time to become useful software or reliable findings. This page records the current stage, the next concrete step, and what is still unknown.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="callout callout-warm" style="margin-bottom:1.5rem">
+        <strong>Current status is part of the project description.</strong>
+        <p>Planned work and placeholders are labelled clearly. No completed results or repository links are implied where none have been added.</p>
+      </div>
+      <div class="project-grid project-grid-all">
+        {projects.map((project) => (
+          <article class="project-card">
+            <div class="project-head"><span class="eyebrow">{project.area}</span><span class="project-status">{project.status}</span></div>
+            <h3>{project.title}</h3>
+            <p>{project.summary}</p>
+            <dl>
+              <div><dt>Method / tools</dt><dd>{project.methodology}{project.technologies.length > 0 ? " · " + project.technologies.join(", ") : ""}</dd></div>
+              <div><dt>Current progress</dt><dd>{project.progress}</dd></div>
+              <div><dt>Results</dt><dd>{project.results}</dd></div>
+              <div><dt>Next step</dt><dd>{project.next}</dd></div>
+              <div><dt>Scope / limitation</dt><dd>{project.limitation}</dd></div>
+            </dl>
+            {project.relatedArticle && <p><a class="text-link" href={project.relatedArticle}>Related research note ↗</a></p>}
+            {project.repository ? (
+              <p class="project-repo"><a class="text-link" href={project.repository} target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a></p>
+            ) : (
+              <p class="repo-empty">Repository link not added</p>
+            )}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</SiteLayout>
